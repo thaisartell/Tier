@@ -23,7 +23,8 @@ typedef enum {
 
 typedef enum {
     INIT = 0,
-    ADD
+    ADD,
+    INFO
 } page;
 
 typedef struct {
@@ -40,11 +41,13 @@ static char ** ratings;
 static float altitudes[5];
 static page current_page;
 static LfInputField new_item_input;
-static char new_item_input_buf[512];
+static char new_item_input_buf[1024];
 
 
 static item* item_entries[1024];
 static uint32_t num_entries = 0;
+item* subject;
+int subject_idx;
 
 static void rendertopbar() {
 
@@ -110,7 +113,6 @@ static void rendericons(){
         lf_push_style_props(text_prop);
         lf_text(icon_letters[i]);
 
-        // lf_pop_style_props();
         lf_pop_font();
         lf_pop_style_props();
         lf_div_end();
@@ -168,30 +170,38 @@ void renderitemplacement() {
     x_vals[0] = 100.0f; x_vals[1] = 100.0f; x_vals[2] = 100.0f; x_vals[3] = 100.0f; x_vals[4] = 100.0f;
 
     for (uint32_t i = 0; i < num_entries; i++) {
-        uint32_t result = 0;
+        if (item_entries[i] != NULL) {
+            uint32_t result = 0;
 
-        for (uint32_t j = 0; j < 5; j++) {
-            if (strcmp(item_entries[i]->tier, ratings[j]) == 0) {
-                result = j; // item's tier has been identified, result represents tier as #
+            for (uint32_t j = 0; j < 5; j++) {
+                if (strcmp(item_entries[i]->tier, ratings[j]) == 0) {
+                    result = j; // item's tier has been identified, result represents tier as #
+                }
             }
+            // Item Icon Config
+            LfUIElementProps prop = lf_get_theme().button_props;
+            prop.color = (LfColor) icon_colors[result]; prop.border_width = 0.0f;
+            prop.corner_radius = 1.0f; prop.margin_left = 2.0f; prop.margin_right = 2.0f;
+
+            lf_push_font(&itemFont);
+            lf_push_style_props(prop);
+            lf_set_ptr_x(x_vals[result]);
+            x_vals[result] += 50 + (6 * strlen(item_entries[i]->name));
+            lf_set_ptr_y_absolute(altitudes[result]);
+
+            lf_button_fixed(item_entries[i]->name, 7 * strlen(item_entries[i]->name), -1);
+
+            // if ((lf_button_fixed(item_entries[i]->name, 7 * strlen(item_entries[i]->name), -1)) == LF_CLICKED) {
+            //     subject = item_entries[i];
+            //     subject_idx = i;
+            //     current_page = INFO;
+            // }
+
+            lf_set_line_should_overflow(true);
+
+            lf_pop_style_props();
+            lf_pop_font();
         }
-        // Item Icon Config
-        LfUIElementProps prop = lf_get_theme().button_props;
-        prop.color = (LfColor) icon_colors[result]; prop.border_width = 0.0f;
-        prop.corner_radius = 1.0f; prop.margin_left = 2.0f; prop.margin_right = 2.0f;
-
-        lf_push_font(&itemFont);
-        lf_push_style_props(prop);
-        lf_set_ptr_x(x_vals[result]);
-        x_vals[result] += 50 + (2 * strlen(item_entries[i]->name));
-        lf_set_ptr_y_absolute(altitudes[result]);
-
-        lf_button_fixed(item_entries[i]->name, 7 * strlen(item_entries[i]->name), ITEM_ICON_HEIGHT);
-
-        lf_set_line_should_overflow(true);
-
-        lf_pop_style_props();
-        lf_pop_font();
     }
 
     free(x_vals);
@@ -429,6 +439,37 @@ static void rendernewpage() {
     lf_pop_style_props();
 }
 
+// void iteminfopage(item* item, int idx) {
+
+//     lf_push_font(&titleFont);
+
+//     LfUIElementProps prop = lf_get_theme().text_props;
+//     prop.margin_bottom  = 15.0f;
+//     lf_push_style_props(prop);
+
+//     prop.text_color = LF_WHITE;
+//     lf_set_ptr_x_absolute(20.0f); lf_set_ptr_y_absolute(20.0f);
+//     lf_text("Selected item:" );
+//     lf_set_ptr_x_absolute(200.0f);
+//     lf_text(item->name);
+
+//     lf_pop_font();
+//     lf_pop_style_props();
+
+//     lf_next_line();
+
+//     lf_set_ptr_x_absolute(25.0f); lf_set_ptr_y_absolute(480.0f);
+//     lf_push_font(&buttonFont);
+
+//     if (lf_button_fixed("Delete Item", 100.0f, -1) == LF_CLICKED) {
+//         current_page = INIT;
+//         item_entries[idx] = NULL; item_entries[idx]->name = NULL; item_entries[idx]->tier = NULL;
+//         free(item_entries[idx]->name); free(item_entries[idx]->tier); free(item_entries[idx]);
+//         serialize_list("./tierdata.bin");
+//     }
+
+// }
+
 void main() {
 
     // Initial Processing
@@ -463,18 +504,18 @@ void main() {
                 rendertopbar();
                 rendericons();
                 renderdivisions();
-                renderitemcontainers();
                 renderitemplacement();
-                printf("Buffer address (buf): %p\n", (void*)new_item_input.buf);
-                printf("Buffer size (buf_size): %u\n", new_item_input.buf_size);
-                printf("Cursor index: %d\n", new_item_input.cursor_index);
-                printf("Text to copy: %s\n", "abcdefghijklmnopqrstuvwxyz");
                 break;
             }
             case ADD: {
-                rendernewpage();
+                rendernewpage("./tierdata.bin");
+                serialize_list("./tierdata.bin");
                 break;
             }
+            // case INFO: {
+            //     iteminfopage(subject, subject_idx);
+            //     serialize_list("./tierdata.bin");
+            // }
         }
 
         lf_end();
@@ -483,7 +524,6 @@ void main() {
     }
 
     // Teardown
-
     for (uint32_t i = 0; i < 5; i++) {
         free(ratings[i]);
         free(icon_letters[i]);
