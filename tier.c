@@ -191,12 +191,6 @@ void renderitemplacement() {
 
             lf_button_fixed(item_entries[i]->name, 7 * strlen(item_entries[i]->name), -1);
 
-            // if ((lf_button_fixed(item_entries[i]->name, 7 * strlen(item_entries[i]->name), -1)) == LF_CLICKED) {
-            //     subject = item_entries[i];
-            //     subject_idx = i;
-            //     current_page = INFO;
-            // }
-
             lf_set_line_should_overflow(true);
 
             lf_pop_style_props();
@@ -319,7 +313,7 @@ void configs() {
         .width = 300,
         .buf = new_item_input_buf,
         .buf_size = sizeof(new_item_input_buf),
-        .placeholder = (char*)"What item are you adding?"
+        .placeholder = (char*)"Type the item name here!"
     };
 
     //Upon Startup
@@ -346,7 +340,7 @@ static void rendernewpage() {
 
     lf_push_font(&subtitleFont);
     lf_set_ptr_x_absolute(20.0f); lf_set_ptr_y_absolute(105.0f);
-    lf_text("Item Name (Max 10 Characters)");
+    lf_text("Item Name");
     lf_pop_font();
 
     lf_next_line();
@@ -391,14 +385,14 @@ static void rendernewpage() {
     LfUIElementProps returnbutton = lf_get_theme().button_props;
     returnbutton.margin_left = 0.0f; returnbutton.margin_right = 0.0f;
     returnbutton.corner_radius = 2.0f; returnbutton.border_width = 0.0f;
-    returnbutton.color = LF_BLUE;
+    returnbutton.color = LF_BLACK;
     returnbutton.text_color = LF_WHITE;
     lf_push_style_props(returnbutton);
 
     lf_set_ptr_x_absolute(25.0f);
     lf_set_ptr_y_absolute(winh - (lf_button_dimension(text).y + returnbutton.padding * 2.0f) - WIN_GAP);
 
-    if(lf_button_fixed("Back", width, 10.0f) == LF_CLICKED) {
+    if(lf_button_fixed("< Back", width, 10.0f) == LF_CLICKED) {
         current_page = INIT;
         selected_tier = -1;
         opened = false;
@@ -438,37 +432,6 @@ static void rendernewpage() {
     lf_set_line_should_overflow(true);
     lf_pop_style_props();
 }
-
-// void iteminfopage(item* item, int idx) {
-
-//     lf_push_font(&titleFont);
-
-//     LfUIElementProps prop = lf_get_theme().text_props;
-//     prop.margin_bottom  = 15.0f;
-//     lf_push_style_props(prop);
-
-//     prop.text_color = LF_WHITE;
-//     lf_set_ptr_x_absolute(20.0f); lf_set_ptr_y_absolute(20.0f);
-//     lf_text("Selected item:" );
-//     lf_set_ptr_x_absolute(200.0f);
-//     lf_text(item->name);
-
-//     lf_pop_font();
-//     lf_pop_style_props();
-
-//     lf_next_line();
-
-//     lf_set_ptr_x_absolute(25.0f); lf_set_ptr_y_absolute(480.0f);
-//     lf_push_font(&buttonFont);
-
-//     if (lf_button_fixed("Delete Item", 100.0f, -1) == LF_CLICKED) {
-//         current_page = INIT;
-//         item_entries[idx] = NULL; item_entries[idx]->name = NULL; item_entries[idx]->tier = NULL;
-//         free(item_entries[idx]->name); free(item_entries[idx]->tier); free(item_entries[idx]);
-//         serialize_list("./tierdata.bin");
-//     }
-
-// }
 
 void main() {
 
@@ -512,10 +475,7 @@ void main() {
                 serialize_list("./tierdata.bin");
                 break;
             }
-            // case INFO: {
-            //     iteminfopage(subject, subject_idx);
-            //     serialize_list("./tierdata.bin");
-            // }
+            
         }
 
         lf_end();
