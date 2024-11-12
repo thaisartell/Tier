@@ -1,7 +1,7 @@
 # Tier
 S-D Tier Ranking Interface
 
-An introductory C project for yours truly, relies on GLFW, Cococry's 'Leif' GitHub, and installing 'xcb' from terminal command line:
+An introductory C project by yours truly, relies on GLFW, Cococry's 'Leif' GitHub, and installing 'xcb' from terminal command line:
     https://www.glfw.org/download.html 
     https://github.com/cococry/leif
 
